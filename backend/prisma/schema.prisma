@@ -1,52 +1,46 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
-generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
-}
-
-datasource db {
-  provider = "postgresql"
-}
-
-
+// 1. Generator block
 generator client {
   provider = "prisma-client-js"
 }
 
+// 2. Datasource block
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+// 3. Models (Tables)
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String?
-  createdAt DateTime @default(now())
+  id         String      @id @default(cuid())
+  email      String      @unique
+  password   String
+  name       String?
+  createdAt  DateTime    @default(now())
   interviews Interview[]
 }
 
 model Interview {
-  id            String   @id @default(cuid())
-  jobDescription String  @db.Text
-  status        String   @default("IN_PROGRESS") 
-  createdAt     DateTime @default(now())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  questions     Question[]
+  id             String     @id @default(cuid())
+  jobDescription String     @db.Text
+  status         String     @default("IN_PROGRESS") 
+  createdAt      DateTime   @default(now())
+  
+  // Foreign Key & Relation
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // One-to-Many Relation
+  questions      Question[]
 }
 
 model Question {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   questionText String  @db.Text
   userAnswer   String? @db.Text
   aiFeedback   String? @db.Text
   score        Int?
+  
+  // Foreign Key & Relation
   interviewId  String
-  interview    Interview @relation(fields: [interviewId], references: [id])
+  interview    Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
 }
