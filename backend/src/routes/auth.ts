@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 
 const router = Router();
 
@@ -26,6 +26,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
     res.status(201).json({ message: 'User created successfully', userId: user.id });
   } catch (error) {
+    console.log("🚨 LOGIN ERROR DETAILS:", error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
