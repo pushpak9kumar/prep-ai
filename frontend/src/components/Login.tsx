@@ -4,9 +4,10 @@ import axios from 'axios';
 // Props receive kar rahe hain taaki login ke baad App ko bata sakein
 interface LoginProps {
   onLoginSuccess: () => void;
+  onSwitchToSignup: () => void; 
 }
 
-function Login({ onLoginSuccess }: LoginProps) {
+function Login({ onLoginSuccess, onSwitchToSignup }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,6 +25,7 @@ function Login({ onLoginSuccess }: LoginProps) {
 
       // Token ko browser ki localStorage mein save karna
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userId', response.data.userId); 
       
       // App ko batana ki login ho gaya
       onLoginSuccess();
@@ -33,8 +35,8 @@ function Login({ onLoginSuccess }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-96">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex items-center justify-center p-4">
+       <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <h2 className="text-3xl font-bold text-white mb-6 text-center">Login to PrepAI</h2>
         
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
@@ -67,6 +69,10 @@ function Login({ onLoginSuccess }: LoginProps) {
             Login
           </button>
         </form>
+         <p className="text-gray-400 text-center mt-4">
+          Don't have an account? 
+          <button onClick={onSwitchToSignup} className="text-blue-400 ml-1 hover:underline">Sign Up</button>
+        </p>
       </div>
     </div>
   );

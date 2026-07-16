@@ -1,24 +1,41 @@
 import { useState, useEffect } from 'react';
 import Login from './components/Login';
+import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // 'login' | 'signup' | 'dashboard'
+  const [currentPage, setCurrentPage] = useState<'login' | 'signup' | 'dashboard'>('login');
 
-  // Jab page load ho, check karo ki user pehle se login toh nahi hai
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setIsLoggedIn(true);
+      setCurrentPage('dashboard');
     }
   }, []);
 
   return (
     <>
-      {isLoggedIn ? (
-        <Dashboard onLogout={() => setIsLoggedIn(false)} />
-      ) : (
-        <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+      {currentPage === 'login' && (
+        <Login 
+          onLoginSuccess={() => setCurrentPage('dashboard')} 
+          onSwitchToSignup={() => setCurrentPage('signup')}
+        />
+      )}
+      
+      {currentPage === 'signup' && (
+        <Signup 
+          onSignupSuccess={() => setCurrentPage('login')} 
+          onSwitchToLogin={() => setCurrentPage('login')}
+        />
+      )}
+
+      {currentPage === 'dashboard' && (
+        <Dashboard onLogout={() => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('userId');
+          setCurrentPage('login');
+        }} />
       )}
     </>
   );
