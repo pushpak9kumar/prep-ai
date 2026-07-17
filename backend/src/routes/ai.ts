@@ -61,4 +61,61 @@ router.post('/generate-questions', async (req: Request, res: Response) => {
   }
 });
 
+// 1. AI ANSWER GRADING API
+router.post('/grade-answer', async (req: Request, res: Response) => {
+  try {
+    const { question, answer, jobDescription } = req.body;
+
+    if (!question || !answer) {
+      return res.status(400).json({ error: 'Question and answer are required' });
+    }
+
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: 'system',
+          // Strict Prompt for JSON output
+          content: 'You are a strict technical interviewer. Evaluate the candidate answer for the given question. Return the response ONLY as a valid JSON object with two keys: "score" (a number from 1 to 10) and "feedback" (a short string explaining why). Do not include markdown formatting.'
+        },
+        {
+          role: 'user',
+          content: `Job Description: ${jobDescription || 'General Tech Role'}\n\nQuestion: ${question}\n\nCandidate Answer: ${answer}`
+        }
+      ],
+      model: 'llama-3.3-70b-versatile', 
+      temperature: 0.3, // Low temperature for consistent grading
+    });
+
+    const content = chatCompletion.choices[0]?.message?.content || '';
+    // Wahi Regex cleaning trick jo humne Day 3 mein sikhi thi!
+    const cleanedContent = content.replace(/```json|```/g, '').trim();
+    const gradingResult = JSON.parse(cleanedContent);
+
+    res.json(gradingResult);
+
+  } catch (error) {
+    console.error('Grading API Error:', error);
+    res.status(500).json({ error: 'Failed to grade answer' });
+  }
+});
+
+// 2. FETCH PAST INTERVIEWS API
+router.get('/history/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    // Database se user ke saare interviews nikalo (newest first)
+    const interviews = await prisma.interview.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: { questions: true } // Saath mein questions bhi fetch karo
+    });
+
+    res.json(interviews);
+  } catch (error) {
+    console.error('History API Error:', error);
+    res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
+
 export default router;
